@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Guess the Number</title>
+  <style>
+    :root { color-scheme: light; --plum:#62205f; --yellow:#ffd353; --paper:#faf4fa; --ink:#341648; --muted:#765b78; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--paper); color:var(--ink); font-family:Arial, sans-serif; }
+    main { max-width:1100px; margin:auto; padding:44px 32px; }
+    header { display:flex; align-items:center; justify-content:space-between; gap:20px; font-size:14px; font-weight:700; }
+    .brand { display:flex; gap:10px; align-items:center; }
+    .logo { background:var(--plum); color:var(--yellow); border-radius:8px; padding:8px 10px; font-family:monospace; font-size:20px; }
+    .tag { color:var(--muted); font-family:monospace; }
+    .layout { display:grid; grid-template-columns:1fr 1fr; gap:64px; align-items:center; margin-top:65px; }
+    .eyebrow { font-size:14px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--plum); }
+    h1 { font-size:clamp(48px,6vw,72px); line-height:.98; letter-spacing:-.065em; margin:18px 0 22px; }
+    .intro { color:var(--muted); font-size:18px; line-height:1.5; max-width:330px; }
+    .mystery { font-size:170px; font-weight:900; letter-spacing:-.1em; line-height:1; margin:26px 0 10px; width:max-content; background:repeating-linear-gradient(to bottom,var(--plum) 0 9px,transparent 9px 13px); background-clip:text; -webkit-background-clip:text; color:transparent; }
+    .panel { background:var(--plum); color:var(--paper); padding:36px; border-radius:26px; box-shadow:10px 10px 0 #e8d9e8; }
+    .score { display:flex; justify-content:space-between; align-items:center; margin-bottom:32px; }
+    .score span { font-size:14px; letter-spacing:.1em; text-transform:uppercase; }
+    #attempts { font-family:monospace; font-size:40px; color:var(--yellow); }
+    label { display:block; font-size:20px; font-weight:700; margin-bottom:12px; }
+    input { width:100%; border:3px solid transparent; border-radius:12px; padding:18px; background:var(--paper); color:var(--ink); font-size:32px; font-family:monospace; }
+    input:focus-visible { outline:3px solid var(--yellow); outline-offset:3px; }
+    input[aria-invalid="true"] { border-color:#ffb242; }
+    .hint { font-size:14px; opacity:.85; margin:12px 0 22px; }
+    button { cursor:pointer; font:700 16px Arial,sans-serif; border:0; border-radius:12px; padding:18px; transition:transform .15s; }
+    button:hover:not(:disabled) { transform:translateY(-2px); }
+    button:focus-visible { outline:3px solid var(--yellow); outline-offset:4px; }
+    button:disabled { cursor:default; opacity:.6; }
+    #submit { width:100%; background:var(--yellow); color:var(--ink); }
+    #feedback { min-height:56px; font-size:18px; line-height:1.4; margin:22px 0 0; }
+    #restart { display:block; margin:12px auto 0; padding:10px 16px; background:transparent; color:var(--paper); text-decoration:underline; text-underline-offset:4px; }
+    .history-wrap { margin-top:36px; }
+    .history-title { color:var(--muted); font-size:14px; font-weight:700; }
+    #history { display:flex; flex-wrap:wrap; gap:8px; list-style:none; padding:0; }
+    #history li { padding:9px 12px; background:#e8d9e8; border-radius:8px; font:16px monospace; }
+    #history li.win { background:var(--yellow); }
+    footer { margin-top:40px; color:var(--muted); font-size:14px; }
+    @media(max-width:700px) { main{padding:24px 20px;} .layout{grid-template-columns:1fr;gap:25px;margin-top:35px;} h1{font-size:54px;} .mystery{display:none;} .panel{padding:26px;} .intro{max-width:none;} .tag{font-size:14px;} footer{margin-top:28px;} }
+    @media(prefers-reduced-motion:reduce) { button{transition:none;} }
+  </style>
+</head>
+<body>
+  <main>
+    <header><div class="brand"><span class="logo" aria-hidden="true">?</span> NUMBER CLUB</div><span class="tag">01 / 100</span></header>
+    <div class="layout">
+      <section>
+        <p class="eyebrow">Small game. Big guess.</p>
+        <h1>One number.<br>Your move.</h1>
+        <p class="intro">I'm thinking of a number from 1 to 100. Find it in as few guesses as you can.</p>
+        <div class="mystery" aria-hidden="true">?</div>
+      </section>
+      <section class="panel" aria-label="Guessing game">
+        <div class="score"><span>Attempts</span><strong id="attempts">00</strong></div>
+        <form id="game" novalidate>
+          <label for="guess">What's your guess?</label>
+          <input id="guess" name="guess" type="text" inputmode="numeric" autocomplete="off" placeholder="e.g. 50" aria-describedby="hint feedback">
+          <p class="hint" id="hint">A whole number between 1 and 100.</p>
+          <button id="submit" type="submit">Make a guess &rarr;</button>
+        </form>
+        <p id="feedback" role="status" aria-live="polite" aria-atomic="true">The mystery starts here.</p>
+        <button id="restart" type="button">Start a new game</button>
+      </section>
+    </div>
+    <section class="history-wrap" aria-label="Guess history"><p class="history-title">YOUR GUESSES</p><ol id="history" aria-label="Previous guesses"></ol></section>
+    <footer>No timer. No pressure. Just trust your numbers.</footer>
+  </main>
+  <script>
+    const form = document.getElementById('game');
+    const input = document.getElementById('guess');
+    const feedback = document.getElementById('feedback');
+    const counter = document.getElementById('attempts');
+    const submit = document.getElementById('submit');
+    const history = document.getElementById('history');
+    let secret;
+    let attempts;
+    let won;
+
+    function startGame() {
+      // Math.random() returns a value from 0 (inclusive) to 1 (exclusive).
+      // Multiplying by 100 and flooring gives 0..99; adding 1 gives 1..100.
+      secret = Math.floor(Math.random() * 100) + 1;
+      attempts = 0;
+      won = false;
+      counter.textContent = '00';
+      feedback.textContent = 'The mystery starts here.';
+      history.replaceChildren();
+      form.reset();
+      input.removeAttribute('aria-invalid');
+      input.disabled = false;
+      submit.disabled = false;
+    }
+
+    // This is an event-driven loop: each form submission is one game iteration.
+    // Unlike a blocking while loop, it lets the browser wait for user input.
+    // The loop continues until a correct guess sets won=true and disables input.
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      if (won) return;
+      const raw = input.value.trim();
+      const guess = Number(raw);
+      // Check the original text too, so letters, decimals, and exponent notation
+      // are rejected gracefully. Invalid input never increases the attempt count.
+      if (!/^\d+$/.test(raw) || !Number.isInteger(guess) || guess < 1 || guess > 100) {
+        feedback.textContent = 'Enter a whole number from 1 to 100. Letters and decimals do not count.';
+        input.setAttribute('aria-invalid', 'true');
+        input.focus();
+        return;
+      }
+      input.removeAttribute('aria-invalid');
+      attempts += 1;
+      counter.textContent = String(attempts).padStart(2, '0');
+      const item = document.createElement('li');
+      if (guess > secret) {
+        feedback.textContent = 'Too high!';
+        item.textContent = guess + ' \u2193';
+        item.setAttribute('aria-label', guess + ': too high');
+      } else if (guess < secret) {
+        feedback.textContent = 'Too low!';
+        item.textContent = guess + ' \u2191';
+        item.setAttribute('aria-label', guess + ': too low');
+      } else {
+        won = true;
+        feedback.textContent = 'You win! The number was ' + secret + '. Total attempts: ' + attempts + '.';
+        item.textContent = guess + ' \u2713';
+        item.className = 'win';
+        item.setAttribute('aria-label', guess + ': correct');
+        input.disabled = true;
+        submit.disabled = true;
+        document.getElementById('restart').focus();
+      }
+      history.appendChild(item);
+      if (!won) {
+        input.value = '';
+        input.focus();
+      }
+    });
+    document.getElementById('restart').addEventListener('click', () => {
+      startGame();
+      input.focus();
+    });
+    startGame();
+  </script>
+</body>
+</html>
