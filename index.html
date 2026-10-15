@@ -5,40 +5,41 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Guess the Number</title>
   <style>
-    :root { color-scheme: light; --plum:#62205f; --yellow:#ffd353; --paper:#faf4fa; --ink:#341648; --muted:#765b78; }
+    /* Light-blue panels with dark-blue text for readable contrast. */
+    :root { color-scheme: light; --sky:#9dd9f3; --accent:#d7efff; --paper:#f3faff; --ink:#123b56; --muted:#47677c; --shadow:#d3eaf5; --button:#155d85; }
     * { box-sizing:border-box; }
     body { margin:0; background:var(--paper); color:var(--ink); font-family:Arial, sans-serif; }
     main { max-width:1100px; margin:auto; padding:44px 32px; }
     header { display:flex; align-items:center; justify-content:space-between; gap:20px; font-size:14px; font-weight:700; }
     .brand { display:flex; gap:10px; align-items:center; }
-    .logo { background:var(--plum); color:var(--yellow); border-radius:8px; padding:8px 10px; font-family:monospace; font-size:20px; }
+    .logo { background:var(--sky); color:var(--ink); border-radius:8px; padding:8px 10px; font-family:monospace; font-size:20px; }
     .tag { color:var(--muted); font-family:monospace; }
     .layout { display:grid; grid-template-columns:1fr 1fr; gap:64px; align-items:center; margin-top:65px; }
-    .eyebrow { font-size:14px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--plum); }
+    .eyebrow { font-size:14px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:#176b95; }
     h1 { font-size:clamp(48px,6vw,72px); line-height:.98; letter-spacing:-.065em; margin:18px 0 22px; }
     .intro { color:var(--muted); font-size:18px; line-height:1.5; max-width:330px; }
-    .mystery { font-size:170px; font-weight:900; letter-spacing:-.1em; line-height:1; margin:26px 0 10px; width:max-content; background:repeating-linear-gradient(to bottom,var(--plum) 0 9px,transparent 9px 13px); background-clip:text; -webkit-background-clip:text; color:transparent; }
-    .panel { background:var(--plum); color:var(--paper); padding:36px; border-radius:26px; box-shadow:10px 10px 0 #e8d9e8; }
+    .mystery { font-size:170px; font-weight:900; letter-spacing:-.1em; line-height:1; margin:26px 0 10px; width:max-content; background:repeating-linear-gradient(to bottom,#248bbd 0 9px,transparent 9px 13px); background-clip:text; -webkit-background-clip:text; color:transparent; }
+    .panel { background:var(--sky); color:var(--ink); padding:36px; border-radius:26px; box-shadow:10px 10px 0 var(--shadow); }
     .score { display:flex; justify-content:space-between; align-items:center; margin-bottom:32px; }
     .score span { font-size:14px; letter-spacing:.1em; text-transform:uppercase; }
-    #attempts { font-family:monospace; font-size:40px; color:var(--yellow); }
+    #attempts { font-family:monospace; font-size:40px; color:var(--ink); }
     label { display:block; font-size:20px; font-weight:700; margin-bottom:12px; }
     input { width:100%; border:3px solid transparent; border-radius:12px; padding:18px; background:var(--paper); color:var(--ink); font-size:32px; font-family:monospace; }
-    input:focus-visible { outline:3px solid var(--yellow); outline-offset:3px; }
+    input:focus-visible { outline:3px solid var(--button); outline-offset:3px; }
     input[aria-invalid="true"] { border-color:#ffb242; }
     .hint { font-size:14px; opacity:.85; margin:12px 0 22px; }
     button { cursor:pointer; font:700 16px Arial,sans-serif; border:0; border-radius:12px; padding:18px; transition:transform .15s; }
     button:hover:not(:disabled) { transform:translateY(-2px); }
-    button:focus-visible { outline:3px solid var(--yellow); outline-offset:4px; }
+    button:focus-visible { outline:3px solid var(--button); outline-offset:4px; }
     button:disabled { cursor:default; opacity:.6; }
-    #submit { width:100%; background:var(--yellow); color:var(--ink); }
+    #submit { width:100%; background:var(--button); color:var(--paper); }
     #feedback { min-height:56px; font-size:18px; line-height:1.4; margin:22px 0 0; }
-    #restart { display:block; margin:12px auto 0; padding:10px 16px; background:transparent; color:var(--paper); text-decoration:underline; text-underline-offset:4px; }
+    #restart { display:block; margin:12px auto 0; padding:10px 16px; background:transparent; color:var(--ink); text-decoration:underline; text-underline-offset:4px; }
     .history-wrap { margin-top:36px; }
     .history-title { color:var(--muted); font-size:14px; font-weight:700; }
     #history { display:flex; flex-wrap:wrap; gap:8px; list-style:none; padding:0; }
-    #history li { padding:9px 12px; background:#e8d9e8; border-radius:8px; font:16px monospace; }
-    #history li.win { background:var(--yellow); }
+    #history li { padding:9px 12px; background:var(--shadow); border-radius:8px; font:16px monospace; }
+    #history li.win { background:var(--accent); }
     footer { margin-top:40px; color:var(--muted); font-size:14px; }
     @media(max-width:700px) { main{padding:24px 20px;} .layout{grid-template-columns:1fr;gap:25px;margin-top:35px;} h1{font-size:54px;} .mystery{display:none;} .panel{padding:26px;} .intro{max-width:none;} .tag{font-size:14px;} footer{margin-top:28px;} }
     @media(prefers-reduced-motion:reduce) { button{transition:none;} }
